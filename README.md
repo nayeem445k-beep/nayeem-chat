@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Messenger Chat</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef1f5;height:100vh;display:flex;align-items:center;justify-content:center}
+.chat{width:min(430px,100%);height:min(760px,100vh);background:#fff;display:flex;flex-direction:column;box-shadow:0 8px 35px rgba(0,0,0,.16);overflow:hidden}
+.header{height:70px;background:#1877f2;color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px}
+.avatar{width:43px;height:43px;border-radius:50%;background:#fff;color:#1877f2;display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:bold}
+.header h3{margin:0;font-size:17px}.status{font-size:12px;opacity:.9;margin-top:3px}
+.messages{flex:1;padding:18px 14px;overflow-y:auto;background:#f7f8fa}
+.msg{display:flex;margin:8px 0}.msg.user{justify-content:flex-end}.bubble{max-width:78%;padding:10px 13px;border-radius:18px;font-size:14px;line-height:1.4;white-space:pre-wrap}
+.bot .bubble{background:#e4e6eb;color:#111;border-bottom-left-radius:5px}
+.user .bubble{background:#1877f2;color:#fff;border-bottom-right-radius:5px}
+.time{font-size:9px;color:#888;margin:3px 7px}
+.user .time{text-align:right}
+.typing{display:none;margin:5px 0}.typing .bubble{padding:10px 14px}
+.dot{display:inline-block;width:6px;height:6px;background:#777;border-radius:50%;margin:0 2px;animation:b 1s infinite}.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.inputbar{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #ddd}
+input{flex:1;border:1px solid #ddd;border-radius:22px;padding:12px 15px;outline:none;font-size:14px}
+button{border:0;background:#1877f2;color:#fff;width:45px;height:45px;border-radius:50%;font-size:19px;cursor:pointer}
+button:active{transform:scale(.96)}
+@media(max-width:450px){body{background:#fff}.chat{height:100vh;width:100%;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="chat">
+  <div class="header">
+    <div class="avatar">N</div>
+    <div><h3>Nayeem</h3><div class="status">● Online</div></div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="msg bot"><div><div class="bubble">আসসালামু আলাইকুম! 👋<br>আমি Nayeem। কী জানতে চান?</div><div class="time">Now</div></div></div>
+    <div class="msg typing" id="typing"><div class="bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+  </div>
+
+  <div class="inputbar">
+    <input id="input" type="text" placeholder="Write a message..." autocomplete="off">
+    <button id="send">➤</button>
+  </div>
+</div>
+
+<script>
+const input=document.getElementById("input");
+const send=document.getElementById("send");
+const messages=document.getElementById("messages");
+const typing=document.getElementById("typing");
+
+function addMessage(text,type){
+  const wrap=document.createElement("div");
+  wrap.className="msg "+type;
+  const inner=document.createElement("div");
+  const bubble=document.createElement("div");
+  bubble.className="bubble";
+  bubble.textContent=text;
+  const time=document.createElement("div");
+  time.className="time";
+  time.textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  inner.appendChild(bubble); inner.appendChild(time); wrap.appendChild(inner);
+  messages.insertBefore(wrap,typing);
+  messages.scrollTop=messages.scrollHeight;
+}
+
+async function askAI(text){
+  /*
+   * IMPORTANT:
+   * This demo currently uses a local demo reply.
+   * To make it a real AI chatbot, connect this function to your backend/API.
+   */
+  await new Promise(r=>setTimeout(r,900));
+  const t=text.toLowerCase();
+  if(t.includes("hello")||t.includes("hi")||t.includes("হাই"))
+    return "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?";
+  if(t.includes("name")||t.includes("নাম"))
+    return "আমি Nayeem।";
+  return "আপনার মেসেজটি পেয়েছি। এই Chatbox-এর UI প্রস্তুত। সত্যিকারের AI reply চালু করতে backend/API connection প্রয়োজন।";
+}
+
+async function sendMessage(){
+  const text=input.value.trim();
+  if(!text)return;
+  addMessage(text,"user");
+  input.value="";
+  typing.style.display="flex";
+  messages.scrollTop=messages.scrollHeight;
+  try{
+    const reply=await askAI(text);
+    typing.style.display="none";
+    addMessage(reply,"bot");
+  }catch(e){
+    typing.style.display="none";
+    addMessage("দুঃখিত, এখন উত্তর দেওয়া যাচ্ছে না।","bot");
+  }
+}
+send.addEventListener("click",sendMessage);
+input.addEventListener("keydown",e=>{if(e.key==="Enter")sendMessage()});
+</script>
+</body>
+</html>
